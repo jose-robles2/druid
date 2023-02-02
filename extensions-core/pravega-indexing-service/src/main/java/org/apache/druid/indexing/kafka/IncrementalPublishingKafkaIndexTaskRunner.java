@@ -100,9 +100,10 @@ public class IncrementalPublishingKafkaIndexTaskRunner extends SeekableStreamInd
       // offset is not present in the topic-partition. This can happen if we're asking a task to read from data
       // that has not been written yet (which is totally legitimate). So let's wait for it to show up
       //
-      log.warn("OffsetOutOfRangeException with message [%s]", e.getMessage());
+      log.warn(" Off set out of Ranged Exception with a message [%s]", e.getMessage());
       possiblyResetOffsetsOrWait(e.offsetOutOfRangePartitions(), recordSupplier, toolbox);
       return Collections.emptyList();
+      
     }
   }
 
@@ -127,7 +128,7 @@ public class IncrementalPublishingKafkaIndexTaskRunner extends SeekableStreamInd
   ) throws InterruptedException, IOException
   {
     final Map<TopicPartition, Long> resetPartitions = new HashMap<>();
-    boolean doReset = false;
+    boolean doReset = false;//decalaring the variable for the Reset
     if (task.getTuningConfig().isResetOffsetAutomatically()) {
       for (Map.Entry<TopicPartition, Long> outOfRangePartition : outOfRangePartitions.entrySet()) {
         final TopicPartition topicPartition = outOfRangePartition.getKey();
@@ -140,11 +141,14 @@ public class IncrementalPublishingKafkaIndexTaskRunner extends SeekableStreamInd
         final Long leastAvailableOffset = recordSupplier.getEarliestSequenceNumber(streamPartition);
         if (leastAvailableOffset == null) {
           throw new ISE(
-              "got null sequence number for partition[%s] when fetching from kafka!",
+          
+              "got null sequence number for partition [%s] when fetching from kafka!",
               topicPartition.partition()
+              
           );
         }
         // reset the seek
+        
         recordSupplier.seek(streamPartition, nextOffset);
         // Reset consumer offset if resetOffsetAutomatically is set to true
         // and the current message offset in the kafka partition is more than the
@@ -156,7 +160,8 @@ public class IncrementalPublishingKafkaIndexTaskRunner extends SeekableStreamInd
       }
     }
 
-    if (doReset) {
+    if (doReset)
+    {
       sendResetRequestAndWait(CollectionUtils.mapKeys(resetPartitions, streamPartition -> StreamPartition.of(
           streamPartition.topic(),
           streamPartition.partition()
@@ -227,7 +232,8 @@ public class IncrementalPublishingKafkaIndexTaskRunner extends SeekableStreamInd
       String checkpointsString
   ) throws IOException
   {
-    if (checkpointsString != null) {
+    if (checkpointsString != null) 
+{
       log.debug("Got checkpoints from task context[%s].", checkpointsString);
       return toolbox.getJsonMapper().readValue(
           checkpointsString,
